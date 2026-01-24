@@ -20,22 +20,19 @@ const servers = [
 ];
 
 /**
- * Metrics per server
+ * Metrics per algorithm per server
  */
 const metrics = {
-  "http://localhost:3001": {
-    requests: 0,
-    totalLatency: 0
-  },
-  "http://localhost:3002": {
-    requests: 0,
-    totalLatency: 0
-  },
-  "http://localhost:3003": {
-    requests: 0,
-    totalLatency: 0
-  }
+  roundrobin: {},
+  least: {},
+  weighted: {}
 };
+
+servers.forEach(server => {
+  metrics.roundrobin[server.url] = { requests: 0, totalLatency: 0 };
+  metrics.least[server.url] = { requests: 0, totalLatency: 0 };
+  metrics.weighted[server.url] = { requests: 0, totalLatency: 0 };
+});
 
 /**
  * Algorithm selector
@@ -66,9 +63,9 @@ app.get("/route", async (req, res) => {
 
     const latency = Date.now() - startTime;
 
-    // Update metrics
-    metrics[server.url].requests += 1;
-    metrics[server.url].totalLatency += latency;
+    // Update metrics for selected algorithm
+    metrics[algo][server.url].requests += 1;
+    metrics[algo][server.url].totalLatency += latency;
 
     res.json({
       algorithm: algo,
@@ -83,6 +80,34 @@ app.get("/route", async (req, res) => {
   }
 });
 
+app.get("/metrics/raw", (req, res) => {
+  res.json(metrics);
+});
+
+app.get("/metrics/formatted", (req, res) => {
+  const response = {};
+
+  for (const algo in metrics) {
+    response[algo] = [];
+
+    for (const server in metrics[algo]) {
+      const data = metrics[algo][server];
+
+      response[algo].push({
+        server,
+        requests: data.requests,
+        averageLatency:
+          data.requests === 0
+            ? 0
+            : Math.round(data.totalLatency / data.requests)
+      });
+    }
+  }
+
+  res.json(response);
+});
+
+/*
 app.get("/metrics", (req, res) => {
   const formattedMetrics = {};
 
@@ -99,6 +124,7 @@ app.get("/metrics", (req, res) => {
 
   res.json(formattedMetrics);
 });
+*/
 
 app.listen(PORT, () => {
   console.log(`Load Balancer running on port ${PORT}`);
