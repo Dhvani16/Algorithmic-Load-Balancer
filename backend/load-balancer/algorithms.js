@@ -1,7 +1,21 @@
 let roundRobinIndex = 0;
+let weightedIndex = 0;
+let weightedServers = [];
 
 /**
- * Round Robin algorithm
+ * Build weighted server list once
+ */
+function initializeWeightedServers(servers) {
+  weightedServers = [];
+  servers.forEach(server => {
+    for (let i = 0; i < server.weight; i++) {
+      weightedServers.push(server);
+    }
+  });
+}
+
+/**
+ * Standard Round Robin
  */
 function roundRobin(servers) {
   const server = servers[roundRobinIndex];
@@ -10,7 +24,7 @@ function roundRobin(servers) {
 }
 
 /**
- * Least Connections algorithm
+ * Least Connections
  */
 function leastConnections(servers) {
   return servers.reduce((min, server) =>
@@ -18,7 +32,21 @@ function leastConnections(servers) {
   );
 }
 
+/**
+ * Weighted Round Robin
+ */
+function weightedRoundRobin(servers) {
+  if (weightedServers.length === 0) {
+    initializeWeightedServers(servers);
+  }
+
+  const server = weightedServers[weightedIndex];
+  weightedIndex = (weightedIndex + 1) % weightedServers.length;
+  return server;
+}
+
 module.exports = {
   roundRobin,
-  leastConnections
+  leastConnections,
+  weightedRoundRobin
 };

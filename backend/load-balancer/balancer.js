@@ -3,7 +3,8 @@ const axios = require("axios");
 
 const {
   roundRobin,
-  leastConnections
+  leastConnections,
+  weightedRoundRobin
 } = require("./algorithms");
 
 const app = express();
@@ -13,9 +14,9 @@ const PORT = 4000;
  * Backend servers
  */
 const servers = [
-  { url: "http://localhost:3001", activeConnections: 0 },
-  { url: "http://localhost:3002", activeConnections: 0 },
-  { url: "http://localhost:3003", activeConnections: 0 }
+  { url: "http://localhost:3001", activeConnections: 0, weight: 3 },
+  { url: "http://localhost:3002", activeConnections: 0, weight: 2 },
+  { url: "http://localhost:3003", activeConnections: 0, weight: 1 }
 ];
 
 /**
@@ -27,6 +28,8 @@ function selectServer(algo) {
       return roundRobin(servers);
     case "least":
       return leastConnections(servers);
+    case "weighted":
+      return weightedRoundRobin(servers);
     default:
       return roundRobin(servers);
   }
