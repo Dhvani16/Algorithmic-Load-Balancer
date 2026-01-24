@@ -5,8 +5,7 @@ const app = express();
 const PORT = 4000;
 
 /**
- * List of backend servers
- * (Hardcoded for now)
+ * Backend servers
  */
 const servers = [
   "http://localhost:3001",
@@ -15,26 +14,36 @@ const servers = [
 ];
 
 /**
- * Temporary routing logic:
- * Always forward to Server A
+ * Round Robin index
+ * Maintains state across requests
+ */
+let currentIndex = 0;
+
+/**
+ * Round Robin routing
  */
 app.get("/route", async (req, res) => {
   try {
-    const targetServer = servers[0]; // Always Server A for now
+    // Select server using Round Robin
+    const targetServer = servers[currentIndex];
+
+    // Move index forward
+    currentIndex = (currentIndex + 1) % servers.length;
 
     const response = await axios.get(targetServer);
 
     res.json({
+      algorithm: "Round Robin",
       routedTo: targetServer,
       data: response.data
     });
   } catch (error) {
     res.status(500).json({
-      error: "Backend server unreachable"
+      error: "Failed to route request"
     });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Load Balancer running on port ${PORT}`);
+  console.log(`Load Balancer (Round Robin) running on port ${PORT}`);
 });
