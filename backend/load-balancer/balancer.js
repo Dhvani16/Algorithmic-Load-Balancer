@@ -20,6 +20,24 @@ const servers = [
 ];
 
 /**
+ * Metrics per server
+ */
+const metrics = {
+  "http://localhost:3001": {
+    requests: 0,
+    totalLatency: 0
+  },
+  "http://localhost:3002": {
+    requests: 0,
+    totalLatency: 0
+  },
+  "http://localhost:3003": {
+    requests: 0,
+    totalLatency: 0
+  }
+};
+
+/**
  * Algorithm selector
  */
 function selectServer(algo) {
@@ -41,13 +59,21 @@ app.get("/route", async (req, res) => {
 
   server.activeConnections++;
 
+  const startTime = Date.now();
+
   try {
     const response = await axios.get(server.url);
+
+    const latency = Date.now() - startTime;
+
+    // Update metrics
+    metrics[server.url].requests += 1;
+    metrics[server.url].totalLatency += latency;
 
     res.json({
       algorithm: algo,
       routedTo: server.url,
-      activeConnections: server.activeConnections,
+      latency: `${latency}ms`,
       data: response.data
     });
   } catch (error) {
@@ -55,6 +81,23 @@ app.get("/route", async (req, res) => {
   } finally {
     server.activeConnections--;
   }
+});
+
+app.get("/metrics", (req, res) => {
+  const formattedMetrics = {};
+
+  for (const server in metrics) {
+    const data = metrics[server];
+    formattedMetrics[server] = {
+      requests: data.requests,
+      averageLatency:
+        data.requests === 0
+          ? "0ms"
+          : `${Math.round(data.totalLatency / data.requests)}ms`
+    };
+  }
+
+  res.json(formattedMetrics);
 });
 
 app.listen(PORT, () => {
