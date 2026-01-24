@@ -1,11 +1,16 @@
 const express = require("express");
 const axios = require("axios");
 
+const {
+  roundRobin,
+  leastConnections
+} = require("./algorithms");
+
 const app = express();
 const PORT = 4000;
 
 /**
- * Backend servers with connection tracking
+ * Backend servers
  */
 const servers = [
   { url: "http://localhost:3001", activeConnections: 0 },
@@ -14,37 +19,41 @@ const servers = [
 ];
 
 /**
- * Select server with least active connections
+ * Algorithm selector
  */
-function getLeastConnectionsServer() {
-  return servers.reduce((min, server) =>
-    server.activeConnections < min.activeConnections ? server : min
-  );
+function selectServer(algo) {
+  switch (algo) {
+    case "roundrobin":
+      return roundRobin(servers);
+    case "least":
+      return leastConnections(servers);
+    default:
+      return roundRobin(servers);
+  }
 }
 
 app.get("/route", async (req, res) => {
-  const server = getLeastConnectionsServer();
+  const algo = req.query.algo || "roundrobin";
+  const server = selectServer(algo);
+
   server.activeConnections++;
 
   try {
     const response = await axios.get(server.url);
 
     res.json({
-      algorithm: "Least Connections",
+      algorithm: algo,
       routedTo: server.url,
       activeConnections: server.activeConnections,
       data: response.data
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Routing failed"
-    });
+    res.status(500).json({ error: "Routing failed" });
   } finally {
-    // Ensure decrement even on failure
     server.activeConnections--;
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Load Balancer (Least Connections) running on port ${PORT}`);
+  console.log(`Load Balancer running on port ${PORT}`);
 });
