@@ -27,9 +27,15 @@ function roundRobin(servers) {
  * Least Connections
  */
 function leastConnections(servers) {
-  return servers.reduce((min, server) =>
-    server.activeConnections < min.activeConnections ? server : min
+  const minConnections = Math.min(
+    ...servers.map(s => s.activeConnections)
   );
+
+  const candidates = servers.filter(
+    s => s.activeConnections === minConnections
+  );
+
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 /**
