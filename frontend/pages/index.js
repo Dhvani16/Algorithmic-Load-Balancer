@@ -24,6 +24,27 @@ export default function Home() {
     }
   }
 
+  async function sendBurstRequests(count = 20) {
+    setLoading(true);
+
+    try {
+      const requests = [];
+
+      for (let i = 0; i < count; i++) {
+        requests.push(
+          fetch(`http://localhost:4000/route?algo=${algorithm}`)
+        );
+      }
+
+      await Promise.all(requests);
+      await fetchMetrics();
+    } catch (err) {
+      console.error("Burst test failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function fetchMetrics() {
     try {
       const res = await fetch("http://localhost:4000/metrics/formatted");
@@ -36,7 +57,7 @@ export default function Home() {
 
   return (
     <div style={{ padding: "40px", fontFamily: "Arial" }}>
-      <h1>Algorithmic Load Balancer Demo</h1>
+      <h1>Algorithmic Load Balancer</h1>
 
       <label>
         Select Routing Algorithm:
@@ -55,6 +76,14 @@ export default function Home() {
 
       <button onClick={sendRequest} disabled={loading}>
         {loading ? "Routing..." : "Send Request"}
+      </button>
+
+      <button
+        onClick={() => sendBurstRequests(20)}
+        disabled={loading}
+        style={{ marginLeft: "10px" }}
+      >
+        Run Burst Test (20 Requests)
       </button>
 
       <br /><br />
