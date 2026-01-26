@@ -1,10 +1,14 @@
 import { useState } from "react";
+import styles from "../styles/Home.module.css";
 
 export default function Home() {
   const [algorithm, setAlgorithm] = useState("roundrobin");
   const [response, setResponse] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(false);
+  const handleChange = (e) => {
+    setAlgorithm(e.target.value);
+  };
 
   async function sendRequest() {
     setLoading(true);
@@ -59,34 +63,23 @@ export default function Home() {
     <div style={{ padding: "40px", fontFamily: "Arial" }}>
       <h1>Algorithmic Load Balancer</h1>
 
-      <label>
-        Select Routing Algorithm:
-        <select
-          value={algorithm}
-          onChange={(e) => setAlgorithm(e.target.value)}
-          style={{ marginLeft: "10px" }}
-        >
-          <option value="roundrobin">Round Robin</option>
-          <option value="least">Least Connections</option>
-          <option value="weighted">Weighted Round Robin</option>
-        </select>
-      </label>
+      <section className={styles.controls}>
+        <label>
+          Select Routing Algorithm:
+          <select value={algorithm} onChange={handleChange}>
+            <option value="roundrobin">Round Robin</option>
+            <option value="least">Least Connections</option>
+            <option value="weighted">Weighted Round Robin</option>
+          </select>
+        </label>
 
-      <br /><br />
-
-      <button onClick={sendRequest} disabled={loading}>
-        {loading ? "Routing..." : "Send Request"}
-      </button>
-
-      <button
-        onClick={() => sendBurstRequests(20)}
-        disabled={loading}
-        style={{ marginLeft: "10px" }}
-      >
-        Run Burst Test (20 Requests)
-      </button>
-
-      <br /><br />
+        <div className={styles.buttons}>
+          <button onClick={sendRequest}>Send Request</button>
+          <button onClick={() => sendBurstRequests(20)}>
+            Run Burst Test (20)
+          </button>
+        </div>
+      </section>
 
       {/*response && (
         <details style={{ marginTop: "20px" }}>
@@ -96,6 +89,29 @@ export default function Home() {
           </pre>
         </details>
       )*/}
+
+      <section className={styles.explanation}>
+        {algorithm === "roundrobin" && (
+          <p>
+            <strong>Round Robin:</strong> Distributes requests evenly across all servers
+            without considering current load or response time.
+          </p>
+        )}
+
+        {algorithm === "least" && (
+          <p>
+            <strong>Least Connections:</strong> Routes traffic to the server with the
+            fewest active requests, improving performance under uneven load.
+          </p>
+        )}
+
+        {algorithm === "weighted" && (
+          <p>
+            <strong>Weighted Round Robin:</strong> Allocates requests based on predefined
+            server capacity weights.
+          </p>
+        )}
+      </section>
 
       {metrics && (
         <div style={{ marginTop: "40px" }}>
