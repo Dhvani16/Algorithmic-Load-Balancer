@@ -16,7 +16,7 @@ export default function Home() {
 
     try {
       const res = await fetch(
-        `http://localhost:4000/route?algo=${algorithm}`
+        `https://algorithmic-load-balancer-backend.onrender.com/route?algo=${algorithm}`
       );
       const data = await res.json();
       setResponse(data);
@@ -36,7 +36,7 @@ export default function Home() {
 
       for (let i = 0; i < count; i++) {
         requests.push(
-          fetch(`http://localhost:4000/route?algo=${algorithm}`)
+          fetch(`https://algorithmic-load-balancer-backend.onrender.com/route?algo=${algorithm}`)
         );
       }
 
@@ -51,7 +51,7 @@ export default function Home() {
 
   async function fetchMetrics() {
     try {
-      const res = await fetch("http://localhost:4000/metrics/formatted");
+      const res = await fetch("https://algorithmic-load-balancer-backend.onrender.com/metrics/formatted");
       const data = await res.json();
       setMetrics(data);
     } catch (err) {
