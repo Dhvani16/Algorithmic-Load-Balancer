@@ -18,6 +18,10 @@ export default function Home() {
       const res = await fetch(
         `https://algorithmic-load-balancer-backend.onrender.com/route?algo=${algorithm}`
       );
+      // For Local
+      // const res = await fetch(
+      //   `http://localhost:5000/route?algo=${algorithm}`
+      // );
       const data = await res.json();
       setResponse(data);
       await fetchMetrics();
@@ -38,6 +42,10 @@ export default function Home() {
         requests.push(
           fetch(`https://algorithmic-load-balancer-backend.onrender.com/route?algo=${algorithm}`)
         );
+        // For local
+        // requests.push(
+        //   fetch(`http://localhost:5000/route?algo=${algorithm}`)
+        // );
       }
 
       await Promise.all(requests);
@@ -52,6 +60,8 @@ export default function Home() {
   async function fetchMetrics() {
     try {
       const res = await fetch("https://algorithmic-load-balancer-backend.onrender.com/metrics/formatted");
+      // For local
+      // const res = await fetch("http://localhost:5000/metrics/formatted");
       const data = await res.json();
       setMetrics(data);
     } catch (err) {

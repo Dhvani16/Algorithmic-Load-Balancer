@@ -25,9 +25,9 @@ const PORT = process.env.PORT || 5000;
  * Backend servers
  */
 const servers = [
-  { url: "http://localhost:3001", activeConnections: 0, weight: 3 },
-  { url: "http://localhost:3002", activeConnections: 0, weight: 2 },
-  { url: "http://localhost:3003", activeConnections: 0, weight: 1 }
+  { id: "server-1", activeConnections: 0, weight: 3, baseLatency: 120 },
+  { id: "server-2", activeConnections: 0, weight: 2, baseLatency: 80 },
+  { id: "server-3", activeConnections: 0, weight: 1, baseLatency: 40 }
 ];
 
 /**
@@ -40,14 +40,11 @@ const metrics = {
 };
 
 servers.forEach(server => {
-  metrics.roundrobin[server.url] = { requests: 0, totalLatency: 0 };
-  metrics.least[server.url] = { requests: 0, totalLatency: 0 };
-  metrics.weighted[server.url] = { requests: 0, totalLatency: 0 };
+  metrics.roundrobin[server.id] = { requests: 0, totalLatency: 0 };
+  metrics.least[server.id] = { requests: 0, totalLatency: 0 };
+  metrics.weighted[server.id] = { requests: 0, totalLatency: 0 };
 });
 
-/**
- * Algorithm selector
- */
 function selectServer(algo) {
   switch (algo) {
     case "roundrobin":
@@ -61,33 +58,41 @@ function selectServer(algo) {
   }
 }
 
+function simulateServerRequest(server) {
+  return new Promise((resolve) => {
+    server.activeConnections++;
+
+    const jitter = Math.floor(Math.random() * 30);
+    const latency = server.baseLatency + jitter;
+
+    setTimeout(() => {
+      server.activeConnections--;
+      resolve(latency);
+    }, latency);
+  });
+}
+
 app.get("/route", async (req, res) => {
   const algo = req.query.algo || "roundrobin";
   const server = selectServer(algo);
 
-  server.activeConnections++;
-
-  const startTime = Date.now();
+  console.log("Incoming route request:", req.query);
+  console.log("Selected server:", server.id);
 
   try {
-    const response = await axios.get(server.url);
+    const latency = await simulateServerRequest(server);
 
-    const latency = Date.now() - startTime;
-
-    // Update metrics for selected algorithm
-    metrics[algo][server.url].requests += 1;
-    metrics[algo][server.url].totalLatency += latency;
+    metrics[algo][server.id].requests += 1;
+    metrics[algo][server.id].totalLatency += latency;
 
     res.json({
       algorithm: algo,
-      routedTo: server.url,
-      latency: `${latency}ms`,
-      data: response.data
+      routedTo: server.id,
+      latency: `${latency}ms`
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Routing failed" });
-  } finally {
-    server.activeConnections--;
   }
 });
 
