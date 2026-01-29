@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Home() {
   const [algorithm, setAlgorithm] = useState("roundrobin");
@@ -16,12 +17,8 @@ export default function Home() {
 
     try {
       const res = await fetch(
-        `https://algorithmic-load-balancer-backend.onrender.com/route?algo=${algorithm}`
+        `${API_BASE}/route?algo=${algorithm}`
       );
-      // For Local
-      // const res = await fetch(
-      //   `http://localhost:5000/route?algo=${algorithm}`
-      // );
       const data = await res.json();
       setResponse(data);
       await fetchMetrics();
@@ -40,12 +37,8 @@ export default function Home() {
 
       for (let i = 0; i < count; i++) {
         requests.push(
-          fetch(`https://algorithmic-load-balancer-backend.onrender.com/route?algo=${algorithm}`)
+          fetch(`${API_BASE}/route?algo=${algorithm}`)
         );
-        // For local
-        // requests.push(
-        //   fetch(`http://localhost:5000/route?algo=${algorithm}`)
-        // );
       }
 
       await Promise.all(requests);
@@ -59,9 +52,7 @@ export default function Home() {
 
   async function fetchMetrics() {
     try {
-      const res = await fetch("https://algorithmic-load-balancer-backend.onrender.com/metrics/formatted");
-      // For local
-      // const res = await fetch("http://localhost:5000/metrics/formatted");
+      const res = await fetch(`${API_BASE}/metrics/formatted`);
       const data = await res.json();
       setMetrics(data);
     } catch (err) {
