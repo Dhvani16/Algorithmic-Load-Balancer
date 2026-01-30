@@ -72,6 +72,10 @@ function simulateServerRequest(server) {
   });
 }
 
+app.get("/", (req, res) => {
+  res.send("Load Balancer API is running");
+});
+
 app.get("/route", async (req, res) => {
   const algo = req.query.algo || "roundrobin";
   const server = selectServer(algo);
