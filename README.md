@@ -103,7 +103,7 @@ cd backend
 npm install
 node index.js
 ```
-Backend runs on http://localhost:4000
+Backend (local) runs on http://localhost:5000
 
 ### 3. Start Frontend
 
@@ -112,7 +112,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Frontend runs on http://localhost:3000
+Frontend(local) runs on http://localhost:3000
 
 ---
 
@@ -142,6 +142,12 @@ Frontend runs on http://localhost:3000
 - Latency-based routing
 - Persistent metrics storage
 - Authentication for admin dashboard
+
+---
+
+## Live Demo
+
+Link: https://algorithmic-load-balancer.vercel.app/
 
 ---
 
